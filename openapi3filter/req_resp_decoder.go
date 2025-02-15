@@ -1153,7 +1153,7 @@ func parsePrimitive(raw string, schema *openapi3.SchemaRef) (v any, err error) {
 func parsePrimitiveCase(raw string, schema *openapi3.SchemaRef, typ string) (any, error) {
 	switch typ {
 	case "integer":
-		if schema.Value.Format == "int32" {
+		if schema.Value.Format.String == "int32" {
 			v, err := strconv.ParseInt(raw, 0, 32)
 			if err != nil {
 				return nil, &ParseError{Kind: KindInvalidFormat, Value: raw, Reason: "an invalid " + typ, Cause: err.(*strconv.NumError).Err}

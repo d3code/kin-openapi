@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/guregu/null/v5"
 	"github.com/stretchr/testify/require"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -141,7 +142,7 @@ func Test_validateResponseHeader(t *testing.T) {
 			name: "test non-typed, nullable header with single string value",
 			args: args{
 				headerName: "X-blab",
-				headerRef:  newHeaderRef(&openapi3.Schema{Nullable: true}, true),
+				headerRef:  newHeaderRef(&openapi3.Schema{Nullable: null.BoolFrom(true)}, true),
 			},
 			isHeaderPresent: true,
 			headerVals:      []string{"blab"},
@@ -151,7 +152,7 @@ func Test_validateResponseHeader(t *testing.T) {
 			name: "test required non-typed, nullable header not present",
 			args: args{
 				headerName: "X-blab",
-				headerRef:  newHeaderRef(&openapi3.Schema{Nullable: true}, true),
+				headerRef:  newHeaderRef(&openapi3.Schema{Nullable: null.BoolFrom(true)}, true),
 			},
 			isHeaderPresent: false,
 			headerVals:      []string{"blab"},
@@ -162,7 +163,7 @@ func Test_validateResponseHeader(t *testing.T) {
 			name: "test non-typed, non-nullable header with single string value",
 			args: args{
 				headerName: "X-blab",
-				headerRef:  newHeaderRef(&openapi3.Schema{Nullable: false}, true),
+				headerRef:  newHeaderRef(&openapi3.Schema{Nullable: null.BoolFrom(false)}, true),
 			},
 			isHeaderPresent: true,
 			headerVals:      []string{"blab"},

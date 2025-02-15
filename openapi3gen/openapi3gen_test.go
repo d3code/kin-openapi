@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/guregu/null/v5"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/stretchr/testify/require"
 
@@ -612,7 +614,7 @@ type T struct {
 
 func (_ *ID) SetSchema(schema *openapi3.Schema) {
 	schema.Type = &openapi3.Types{"string"} // Assuming this matches your custom implementation
-	schema.Format = "uuid"
+	schema.Format = null.StringFrom("uuid")
 }
 
 func ExampleSetSchemar() {

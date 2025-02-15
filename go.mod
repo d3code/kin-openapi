@@ -10,6 +10,7 @@ require (
 	github.com/oasdiff/yaml3 v0.0.0-20241210130736-a94c01f36349
 	github.com/perimeterx/marshmallow v1.1.5
 	github.com/stretchr/testify v1.9.0
+	github.com/guregu/null/v5 v5.0.0
 )
 
 require (

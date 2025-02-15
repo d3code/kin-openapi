@@ -16,6 +16,7 @@ import (
 	"unicode/utf16"
 
 	"github.com/go-openapi/jsonpointer"
+	"github.com/guregu/null/v5"
 	"github.com/mohae/deepcopy"
 )
 
@@ -89,7 +90,7 @@ type Schema struct {
 	Not          *SchemaRef    `json:"not,omitempty" yaml:"not,omitempty"`
 	Type         *Types        `json:"type,omitempty" yaml:"type,omitempty"`
 	Title        string        `json:"title,omitempty" yaml:"title,omitempty"`
-	Format       string        `json:"format,omitempty" yaml:"format,omitempty"`
+	Format       null.String   `json:"format,omitempty" yaml:"format,omitempty"`
 	Description  string        `json:"description,omitempty" yaml:"description,omitempty"`
 	Enum         []any         `json:"enum,omitempty" yaml:"enum,omitempty"`
 	Default      any           `json:"default,omitempty" yaml:"default,omitempty"`
@@ -97,17 +98,17 @@ type Schema struct {
 	ExternalDocs *ExternalDocs `json:"externalDocs,omitempty" yaml:"externalDocs,omitempty"`
 
 	// Array-related, here for struct compactness
-	UniqueItems bool `json:"uniqueItems,omitempty" yaml:"uniqueItems,omitempty"`
+	UniqueItems null.Bool `json:"uniqueItems,omitempty" yaml:"uniqueItems,omitempty"`
 	// Number-related, here for struct compactness
-	ExclusiveMin bool `json:"exclusiveMinimum,omitempty" yaml:"exclusiveMinimum,omitempty"`
-	ExclusiveMax bool `json:"exclusiveMaximum,omitempty" yaml:"exclusiveMaximum,omitempty"`
+	ExclusiveMin null.Bool `json:"exclusiveMinimum,omitempty" yaml:"exclusiveMinimum,omitempty"`
+	ExclusiveMax null.Bool `json:"exclusiveMaximum,omitempty" yaml:"exclusiveMaximum,omitempty"`
 	// Properties
-	Nullable        bool `json:"nullable,omitempty" yaml:"nullable,omitempty"`
-	ReadOnly        bool `json:"readOnly,omitempty" yaml:"readOnly,omitempty"`
-	WriteOnly       bool `json:"writeOnly,omitempty" yaml:"writeOnly,omitempty"`
-	AllowEmptyValue bool `json:"allowEmptyValue,omitempty" yaml:"allowEmptyValue,omitempty"`
-	Deprecated      bool `json:"deprecated,omitempty" yaml:"deprecated,omitempty"`
-	XML             *XML `json:"xml,omitempty" yaml:"xml,omitempty"`
+	Nullable        null.Bool `json:"nullable,omitempty" yaml:"nullable,omitempty"`
+	ReadOnly        null.Bool `json:"readOnly,omitempty" yaml:"readOnly,omitempty"`
+	WriteOnly       null.Bool `json:"writeOnly,omitempty" yaml:"writeOnly,omitempty"`
+	AllowEmptyValue null.Bool `json:"allowEmptyValue,omitempty" yaml:"allowEmptyValue,omitempty"`
+	Deprecated      bool      `json:"deprecated,omitempty" yaml:"deprecated,omitempty"`
+	XML             *XML      `json:"xml,omitempty" yaml:"xml,omitempty"`
 
 	// Number
 	Min        *float64 `json:"minimum,omitempty" yaml:"minimum,omitempty"`
@@ -297,7 +298,7 @@ func (schema Schema) MarshalYAML() (any, error) {
 	if x := schema.Title; len(x) != 0 {
 		m["title"] = x
 	}
-	if x := schema.Format; len(x) != 0 {
+	if x := schema.Format; len(x.String) != 0 {
 		m["format"] = x
 	}
 	if x := schema.Description; len(x) != 0 {
@@ -317,27 +318,27 @@ func (schema Schema) MarshalYAML() (any, error) {
 	}
 
 	// Array-related
-	if x := schema.UniqueItems; x {
+	if x := schema.UniqueItems; x.Bool {
 		m["uniqueItems"] = x
 	}
 	// Number-related
-	if x := schema.ExclusiveMin; x {
+	if x := schema.ExclusiveMin; x.Bool {
 		m["exclusiveMinimum"] = x
 	}
-	if x := schema.ExclusiveMax; x {
+	if x := schema.ExclusiveMax; x.Bool {
 		m["exclusiveMaximum"] = x
 	}
 	// Properties
-	if x := schema.Nullable; x {
-		m["nullable"] = x
+	if x := schema.Nullable; x.Bool {
+		m["nullable"] = x.Bool
 	}
-	if x := schema.ReadOnly; x {
+	if x := schema.ReadOnly; x.Bool {
 		m["readOnly"] = x
 	}
-	if x := schema.WriteOnly; x {
+	if x := schema.WriteOnly; x.Bool {
 		m["writeOnly"] = x
 	}
-	if x := schema.AllowEmptyValue; x {
+	if x := schema.AllowEmptyValue; x.Bool {
 		m["allowEmptyValue"] = x
 	}
 	if x := schema.Deprecated; x {
@@ -468,7 +469,7 @@ func (schema *Schema) UnmarshalJSON(data []byte) error {
 
 	*schema = Schema(x)
 
-	if schema.Format == "date" {
+	if schema.Format.String == "date" {
 		// This is a fix for: https://github.com/getkin/kin-openapi/issues/697
 		if eg, ok := schema.Example.(string); ok {
 			schema.Example = strings.TrimSuffix(eg, "T00:00:00Z")
@@ -633,14 +634,14 @@ func NewIntegerSchema() *Schema {
 func NewInt32Schema() *Schema {
 	return &Schema{
 		Type:   &Types{TypeInteger},
-		Format: "int32",
+		Format: null.StringFrom("int32"),
 	}
 }
 
 func NewInt64Schema() *Schema {
 	return &Schema{
 		Type:   &Types{TypeInteger},
-		Format: "int64",
+		Format: null.StringFrom("int64"),
 	}
 }
 
@@ -653,21 +654,21 @@ func NewStringSchema() *Schema {
 func NewDateTimeSchema() *Schema {
 	return &Schema{
 		Type:   &Types{TypeString},
-		Format: "date-time",
+		Format: null.StringFrom("date-time"),
 	}
 }
 
 func NewUUIDSchema() *Schema {
 	return &Schema{
 		Type:   &Types{TypeString},
-		Format: "uuid",
+		Format: null.StringFrom("uuid"),
 	}
 }
 
 func NewBytesSchema() *Schema {
 	return &Schema{
 		Type:   &Types{TypeString},
-		Format: "byte",
+		Format: null.StringFrom("byte"),
 	}
 }
 
@@ -685,7 +686,7 @@ func NewObjectSchema() *Schema {
 }
 
 func (schema *Schema) WithNullable() *Schema {
-	schema.Nullable = true
+	schema.Nullable = null.BoolFrom(true)
 	return schema
 }
 
@@ -700,12 +701,12 @@ func (schema *Schema) WithMax(value float64) *Schema {
 }
 
 func (schema *Schema) WithExclusiveMin(value bool) *Schema {
-	schema.ExclusiveMin = value
+	schema.ExclusiveMin = null.BoolFrom(value)
 	return schema
 }
 
 func (schema *Schema) WithExclusiveMax(value bool) *Schema {
-	schema.ExclusiveMax = value
+	schema.ExclusiveMax = null.BoolFrom(value)
 	return schema
 }
 
@@ -720,7 +721,7 @@ func (schema *Schema) WithDefault(defaultValue any) *Schema {
 }
 
 func (schema *Schema) WithFormat(value string) *Schema {
-	schema.Format = value
+	schema.Format = null.StringFrom(value)
 	return schema
 }
 
@@ -788,7 +789,7 @@ func (schema *Schema) WithMaxItems(i int64) *Schema {
 }
 
 func (schema *Schema) WithUniqueItems(unique bool) *Schema {
-	schema.UniqueItems = unique
+	schema.UniqueItems = null.BoolFrom(unique)
 	return schema
 }
 
@@ -855,14 +856,14 @@ func (schema *Schema) WithAdditionalProperties(v *Schema) *Schema {
 }
 
 func (schema *Schema) PermitsNull() bool {
-	return schema.Nullable || schema.Type.Includes("null")
+	return schema.Nullable.Bool || schema.Type.Includes("null")
 }
 
 // IsEmpty tells whether schema is equivalent to the empty schema `{}`.
 func (schema *Schema) IsEmpty() bool {
-	if schema.Type != nil || schema.Format != "" || len(schema.Enum) != 0 ||
-		schema.UniqueItems || schema.ExclusiveMin || schema.ExclusiveMax ||
-		schema.Nullable || schema.ReadOnly || schema.WriteOnly || schema.AllowEmptyValue ||
+	if schema.Type != nil || schema.Format.String != "" || len(schema.Enum) != 0 ||
+		schema.UniqueItems.Bool || schema.ExclusiveMin.Bool || schema.ExclusiveMax.Bool ||
+		schema.Nullable.Bool || schema.ReadOnly.Bool || schema.WriteOnly.Bool || schema.AllowEmptyValue.Bool ||
 		schema.Min != nil || schema.Max != nil || schema.MultipleOf != nil ||
 		schema.MinLength != 0 || schema.MaxLength != nil || schema.Pattern != "" ||
 		schema.MinItems != 0 || schema.MaxItems != nil ||
@@ -923,7 +924,7 @@ func (schema *Schema) validate(ctx context.Context, stack []*Schema) ([]*Schema,
 	}
 	stack = append(stack, schema)
 
-	if schema.ReadOnly && schema.WriteOnly {
+	if schema.ReadOnly.Bool && schema.WriteOnly.Bool {
 		return stack, errors.New("a property MUST NOT be marked as both readOnly and writeOnly being true")
 	}
 
@@ -979,7 +980,7 @@ func (schema *Schema) validate(ctx context.Context, stack []*Schema) ([]*Schema,
 		switch schemaType {
 		case TypeBoolean:
 		case TypeNumber:
-			if format := schema.Format; len(format) > 0 {
+			if format := schema.Format.String; len(format) > 0 {
 				switch format {
 				case "float", "double":
 				default:
@@ -989,7 +990,7 @@ func (schema *Schema) validate(ctx context.Context, stack []*Schema) ([]*Schema,
 				}
 			}
 		case TypeInteger:
-			if format := schema.Format; len(format) > 0 {
+			if format := schema.Format.String; len(format) > 0 {
 				switch format {
 				case "int32", "int64":
 				default:
@@ -999,7 +1000,7 @@ func (schema *Schema) validate(ctx context.Context, stack []*Schema) ([]*Schema,
 				}
 			}
 		case TypeString:
-			if format := schema.Format; len(format) > 0 {
+			if format := schema.Format.String; len(format) > 0 {
 				switch format {
 				// Supported by OpenAPIv3.0.3:
 				// https://spec.openapis.org/oas/v3.0.3
@@ -1519,7 +1520,7 @@ func (schema *Schema) visitJSONNumber(settings *schemaValidationSettings, value 
 	// formats
 	var formatStrErr string
 	var formatErr error
-	format := schema.Format
+	format := schema.Format.String
 	if format != "" {
 		if requireInteger {
 			if f, ok := SchemaIntegerFormats[format]; ok {
@@ -1568,7 +1569,7 @@ func (schema *Schema) visitJSONNumber(settings *schemaValidationSettings, value 
 	}
 
 	// "exclusiveMinimum"
-	if v := schema.ExclusiveMin; v && !(*schema.Min < value) {
+	if v := schema.ExclusiveMin.Bool; v && !(*schema.Min < value) {
 		if settings.failfast {
 			return errSchema
 		}
@@ -1586,7 +1587,7 @@ func (schema *Schema) visitJSONNumber(settings *schemaValidationSettings, value 
 	}
 
 	// "exclusiveMaximum"
-	if v := schema.ExclusiveMax; v && !(*schema.Max > value) {
+	if v := schema.ExclusiveMax.Bool; v && !(*schema.Max > value) {
 		if settings.failfast {
 			return errSchema
 		}
@@ -1758,7 +1759,7 @@ func (schema *Schema) visitJSONString(settings *schemaValidationSettings, value 
 	// "format"
 	var formatStrErr string
 	var formatErr error
-	if format := schema.Format; format != "" {
+	if format := schema.Format.String; format != "" {
 		if f, ok := SchemaStringFormats[format]; ok {
 			if err := f.Validate(value); err != nil {
 				var reason string
@@ -1850,7 +1851,7 @@ func (schema *Schema) visitJSONArray(settings *schemaValidationSettings, value [
 	if sliceUniqueItemsChecker == nil {
 		sliceUniqueItemsChecker = isSliceOfUniqueItems
 	}
-	if v := schema.UniqueItems; v && !sliceUniqueItemsChecker(value) {
+	if v := schema.UniqueItems.Bool; v && !sliceUniqueItemsChecker(value) {
 		if settings.failfast {
 			return errSchema
 		}
@@ -1915,8 +1916,8 @@ func (schema *Schema) visitJSONObject(settings *schemaValidationSettings, value 
 		sort.Strings(properties)
 		for _, propName := range properties {
 			propSchema := schema.Properties[propName]
-			reqRO := settings.asreq && propSchema.Value.ReadOnly && !settings.readOnlyValidationDisabled
-			repWO := settings.asrep && propSchema.Value.WriteOnly && !settings.writeOnlyValidationDisabled
+			reqRO := settings.asreq && propSchema.Value.ReadOnly.Bool && !settings.readOnlyValidationDisabled
+			repWO := settings.asrep && propSchema.Value.WriteOnly.Bool && !settings.writeOnlyValidationDisabled
 
 			if f := settings.defaultsSet; f != nil && value[propName] == nil {
 				if dflt := propSchema.Value.Default; dflt != nil && !reqRO && !repWO {
@@ -2049,10 +2050,10 @@ func (schema *Schema) visitJSONObject(settings *schemaValidationSettings, value 
 	// "required"
 	for _, k := range schema.Required {
 		if _, ok := value[k]; !ok {
-			if s := schema.Properties[k]; s != nil && s.Value.ReadOnly && settings.asreq {
+			if s := schema.Properties[k]; s != nil && s.Value.ReadOnly.Bool && settings.asreq {
 				continue
 			}
-			if s := schema.Properties[k]; s != nil && s.Value.WriteOnly && settings.asrep {
+			if s := schema.Properties[k]; s != nil && s.Value.WriteOnly.Bool && settings.asrep {
 				continue
 			}
 			if settings.failfast {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/guregu/null/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -73,7 +74,7 @@ func TestFormatCallback_WrapError(t *testing.T) {
 		return errSomething
 	}))
 
-	s := &Schema{Format: "foobar"}
+	s := &Schema{Format: null.StringFrom("foobar")}
 	err := s.VisitJSONString("blablabla")
 
 	assert.ErrorIs(t, err, errSomething)
@@ -220,7 +221,7 @@ func TestNumberFormats(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			schema := &Schema{
 				Type:   &Types{tc.typ},
-				Format: tc.format,
+				Format: null.StringFrom(tc.format),
 			}
 			err := schema.VisitJSON(tc.value)
 			var schemaError = &SchemaError{}

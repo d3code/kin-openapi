@@ -9,6 +9,7 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi2"
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/guregu/null/v5"
 )
 
 // ToV3 converts an OpenAPIv2 spec to an OpenAPIv3 spec
@@ -263,20 +264,20 @@ func ToV3Parameter(components *openapi3.Components, parameter *openapi2.Paramete
 			Description:     parameter.Description,
 			Type:            typ,
 			Extensions:      stripNonExtensions(parameter.Extensions),
-			Format:          format,
+			Format:          null.NewString(format, true),
 			Enum:            parameter.Enum,
 			Min:             parameter.Minimum,
 			Max:             parameter.Maximum,
-			ExclusiveMin:    parameter.ExclusiveMin,
-			ExclusiveMax:    parameter.ExclusiveMax,
+			ExclusiveMin:    null.NewBool(parameter.ExclusiveMin, true),
+			ExclusiveMax:    null.NewBool(parameter.ExclusiveMax, true),
 			MinLength:       parameter.MinLength,
 			MaxLength:       parameter.MaxLength,
 			Default:         parameter.Default,
 			MinItems:        parameter.MinItems,
 			MaxItems:        parameter.MaxItems,
 			Pattern:         parameter.Pattern,
-			AllowEmptyValue: parameter.AllowEmptyValue,
-			UniqueItems:     parameter.UniqueItems,
+			AllowEmptyValue: null.NewBool(parameter.AllowEmptyValue, true),
+			UniqueItems:     null.NewBool(parameter.UniqueItems, true),
 			MultipleOf:      parameter.MultipleOf,
 			Required:        required,
 		}}
@@ -486,18 +487,18 @@ func ToV3SchemaRef(schema *openapi2.SchemaRef) *openapi3.SchemaRef {
 		Extensions:           schema.Extensions,
 		Type:                 schema.Value.Type,
 		Title:                schema.Value.Title,
-		Format:               schema.Value.Format,
+		Format:               null.StringFrom(schema.Value.Format),
 		Description:          schema.Value.Description,
 		Enum:                 schema.Value.Enum,
 		Default:              schema.Value.Default,
 		Example:              schema.Value.Example,
 		ExternalDocs:         schema.Value.ExternalDocs,
-		UniqueItems:          schema.Value.UniqueItems,
-		ExclusiveMin:         schema.Value.ExclusiveMin,
-		ExclusiveMax:         schema.Value.ExclusiveMax,
-		ReadOnly:             schema.Value.ReadOnly,
-		WriteOnly:            schema.Value.WriteOnly,
-		AllowEmptyValue:      schema.Value.AllowEmptyValue,
+		UniqueItems:          null.BoolFrom(schema.Value.UniqueItems),
+		ExclusiveMin:         null.BoolFrom(schema.Value.ExclusiveMin),
+		ExclusiveMax:         null.BoolFrom(schema.Value.ExclusiveMax),
+		ReadOnly:             null.BoolFrom(schema.Value.ReadOnly),
+		WriteOnly:            null.BoolFrom(schema.Value.WriteOnly),
+		AllowEmptyValue:      null.BoolFrom(schema.Value.AllowEmptyValue),
 		Deprecated:           schema.Value.Deprecated,
 		XML:                  schema.Value.XML,
 		Min:                  schema.Value.Min,
@@ -526,7 +527,8 @@ func ToV3SchemaRef(schema *openapi2.SchemaRef) *openapi3.SchemaRef {
 		v3Schema.Items = ToV3SchemaRef(schema.Value.Items)
 	}
 	if schema.Value.Type.Is("file") {
-		v3Schema.Format, v3Schema.Type = "binary", &openapi3.Types{"string"}
+		v3Schema.Format = null.StringFrom("binary")
+		v3Schema.Type = &openapi3.Types{"string"}
 	}
 	for k, v := range schema.Value.Properties {
 		v3Schema.Properties[k] = ToV3SchemaRef(v)
@@ -536,7 +538,7 @@ func ToV3SchemaRef(schema *openapi2.SchemaRef) *openapi3.SchemaRef {
 	}
 	if val, ok := schema.Value.Extensions["x-nullable"]; ok {
 		if nullable, valid := val.(bool); valid {
-			v3Schema.Nullable = nullable
+			v3Schema.Nullable = null.BoolFrom(nullable)
 			delete(v3Schema.Extensions, "x-nullable")
 		}
 	}
@@ -837,7 +839,7 @@ func FromV3SchemaRef(schema *openapi3.SchemaRef, components *openapi3.Components
 	if ref := schema.Ref; ref != "" {
 		name := getParameterNameFromNewRef(ref)
 		if val, ok := components.Schemas[name]; ok {
-			if val.Value.Format == "binary" {
+			if val.Value.Format.String == "binary" {
 				v2Ref := strings.Replace(ref, "#/components/schemas/", "#/parameters/", 1)
 				return nil, &openapi2.Parameter{Ref: v2Ref}
 			}
@@ -852,7 +854,7 @@ func FromV3SchemaRef(schema *openapi3.SchemaRef, components *openapi3.Components
 	}
 
 	if schema.Value != nil {
-		if schema.Value.Type.Is("string") && schema.Value.Format == "binary" {
+		if schema.Value.Type.Is("string") && schema.Value.Format.String == "binary" {
 			paramType := &openapi3.Types{"file"}
 			required := false
 
@@ -872,16 +874,16 @@ func FromV3SchemaRef(schema *openapi3.SchemaRef, components *openapi3.Components
 				Enum:         schema.Value.Enum,
 				Minimum:      schema.Value.Min,
 				Maximum:      schema.Value.Max,
-				ExclusiveMin: schema.Value.ExclusiveMin,
-				ExclusiveMax: schema.Value.ExclusiveMax,
+				ExclusiveMin: schema.Value.ExclusiveMin.Bool,
+				ExclusiveMax: schema.Value.ExclusiveMax.Bool,
 				MinLength:    schema.Value.MinLength,
 				MaxLength:    schema.Value.MaxLength,
 				Default:      schema.Value.Default,
 				// Items:           schema.Value.Items,
 				MinItems:        schema.Value.MinItems,
 				MaxItems:        schema.Value.MaxItems,
-				AllowEmptyValue: schema.Value.AllowEmptyValue,
-				UniqueItems:     schema.Value.UniqueItems,
+				AllowEmptyValue: schema.Value.AllowEmptyValue.Bool,
+				UniqueItems:     schema.Value.UniqueItems.Bool,
 				MultipleOf:      schema.Value.MultipleOf,
 				Extensions:      stripNonExtensions(schema.Value.Extensions),
 				Required:        required,
@@ -893,18 +895,18 @@ func FromV3SchemaRef(schema *openapi3.SchemaRef, components *openapi3.Components
 		Extensions:           schema.Value.Extensions,
 		Type:                 schema.Value.Type,
 		Title:                schema.Value.Title,
-		Format:               schema.Value.Format,
+		Format:               schema.Value.Format.String,
 		Description:          schema.Value.Description,
 		Enum:                 schema.Value.Enum,
 		Default:              schema.Value.Default,
 		Example:              schema.Value.Example,
 		ExternalDocs:         schema.Value.ExternalDocs,
-		UniqueItems:          schema.Value.UniqueItems,
-		ExclusiveMin:         schema.Value.ExclusiveMin,
-		ExclusiveMax:         schema.Value.ExclusiveMax,
-		ReadOnly:             schema.Value.ReadOnly,
-		WriteOnly:            schema.Value.WriteOnly,
-		AllowEmptyValue:      schema.Value.AllowEmptyValue,
+		UniqueItems:          schema.Value.UniqueItems.Bool,
+		ExclusiveMin:         schema.Value.ExclusiveMin.Bool,
+		ExclusiveMax:         schema.Value.ExclusiveMax.Bool,
+		ReadOnly:             schema.Value.ReadOnly.Bool,
+		WriteOnly:            schema.Value.WriteOnly.Bool,
+		AllowEmptyValue:      schema.Value.AllowEmptyValue.Bool,
 		Deprecated:           schema.Value.Deprecated,
 		XML:                  schema.Value.XML,
 		Min:                  schema.Value.Min,
@@ -943,7 +945,7 @@ func FromV3SchemaRef(schema *openapi3.SchemaRef, components *openapi3.Components
 		v2Schema.AllOf[i], _ = FromV3SchemaRef(v, components)
 	}
 	if schema.Value.PermitsNull() {
-		schema.Value.Nullable = false
+		schema.Value.Nullable = null.BoolFrom(false)
 		if schema.Value.Extensions == nil {
 			v2Schema.Extensions = make(map[string]any)
 		}
@@ -1012,7 +1014,7 @@ func FromV3RequestBodyFormData(mediaType *openapi3.MediaType) openapi2.Parameter
 		}
 		val := schemaRef.Value
 		typ := val.Type
-		if val.Format == "binary" {
+		if val.Format.String == "binary" {
 			typ = &openapi3.Types{"file"}
 		}
 		required := false
@@ -1034,8 +1036,8 @@ func FromV3RequestBodyFormData(mediaType *openapi3.MediaType) openapi2.Parameter
 			In:           "formData",
 			Extensions:   stripNonExtensions(val.Extensions),
 			Enum:         val.Enum,
-			ExclusiveMin: val.ExclusiveMin,
-			ExclusiveMax: val.ExclusiveMax,
+			ExclusiveMin: val.ExclusiveMin.Bool,
+			ExclusiveMax: val.ExclusiveMax.Bool,
 			MinLength:    val.MinLength,
 			MaxLength:    val.MaxLength,
 			Default:      val.Default,
@@ -1047,9 +1049,9 @@ func FromV3RequestBodyFormData(mediaType *openapi3.MediaType) openapi2.Parameter
 			Pattern:      val.Pattern,
 			// CollectionFormat: val.CollectionFormat,
 			// Format:          val.Format,
-			AllowEmptyValue: val.AllowEmptyValue,
+			AllowEmptyValue: val.AllowEmptyValue.Bool,
 			Required:        required,
-			UniqueItems:     val.UniqueItems,
+			UniqueItems:     val.UniqueItems.Bool,
 			MultipleOf:      val.MultipleOf,
 		}
 		parameters = append(parameters, parameter)

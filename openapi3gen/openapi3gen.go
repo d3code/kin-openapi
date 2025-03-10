@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/guregu/null/v5"
 )
 
 // CycleError indicates that a type graph has one or more possible cycles.
@@ -233,7 +234,7 @@ func (g *Generator) generateWithoutSaving(parents []*theTypeInfo, t reflect.Type
 	}
 
 	schema := &openapi3.Schema{}
-	schema.Nullable = isNullable
+	schema.Nullable = null.BoolFrom(isNullable)
 
 	switch t.Kind() {
 	case reflect.Func, reflect.Chan:
@@ -254,10 +255,10 @@ func (g *Generator) generateWithoutSaving(parents []*theTypeInfo, t reflect.Type
 		schema.Max = &maxInt16
 	case reflect.Int32:
 		schema.Type = &openapi3.Types{"integer"}
-		schema.Format = "int32"
+		schema.Format = null.StringFrom("int32")
 	case reflect.Int64:
 		schema.Type = &openapi3.Types{"integer"}
-		schema.Format = "int64"
+		schema.Format = null.StringFrom("int64")
 	case reflect.Uint:
 		schema.Type = &openapi3.Types{"integer"}
 		schema.Min = &zeroInt
@@ -280,10 +281,10 @@ func (g *Generator) generateWithoutSaving(parents []*theTypeInfo, t reflect.Type
 
 	case reflect.Float32:
 		schema.Type = &openapi3.Types{"number"}
-		schema.Format = "float"
+		schema.Format = null.StringFrom("float")
 	case reflect.Float64:
 		schema.Type = &openapi3.Types{"number"}
-		schema.Format = "double"
+		schema.Format = null.StringFrom("double")
 
 	case reflect.String:
 		schema.Type = &openapi3.Types{"string"}
@@ -292,7 +293,7 @@ func (g *Generator) generateWithoutSaving(parents []*theTypeInfo, t reflect.Type
 		if t.Elem().Kind() == reflect.Uint8 {
 			if t != rawMessageType {
 				schema.Type = &openapi3.Types{"string"}
-				schema.Format = "byte"
+				schema.Format = null.StringFrom("byte")
 			}
 		} else {
 			schema.Type = &openapi3.Types{"array"}
@@ -328,7 +329,7 @@ func (g *Generator) generateWithoutSaving(parents []*theTypeInfo, t reflect.Type
 	case reflect.Struct:
 		if t == timeType {
 			schema.Type = &openapi3.Types{"string"}
-			schema.Format = "date-time"
+			schema.Format = null.StringFrom("date-time")
 		} else {
 			typeName := g.generateTypeName(t)
 

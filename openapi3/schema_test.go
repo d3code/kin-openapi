@@ -9,7 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/oasdiff/yaml3"
+	"github.com/guregu/null/v5"
+	yaml "github.com/oasdiff/yaml"
 	"github.com/stretchr/testify/require"
 )
 
@@ -543,7 +544,7 @@ var schemaExamples = []schemaExample{
 			Type:        &Types{"array"},
 			MinItems:    2,
 			MaxItems:    Uint64Ptr(3),
-			UniqueItems: true,
+			UniqueItems: null.BoolFrom(true),
 			Items:       NewFloat64Schema().NewRef(),
 		},
 		Serialization: map[string]any{
@@ -581,7 +582,7 @@ var schemaExamples = []schemaExample{
 		Title: "ARRAY : items format 'object'",
 		Schema: &Schema{
 			Type:        &Types{"array"},
-			UniqueItems: true,
+			UniqueItems: null.BoolFrom(true),
 			Items: (&Schema{
 				Type: &Types{"object"},
 				Properties: Schemas{
@@ -638,13 +639,13 @@ var schemaExamples = []schemaExample{
 		Title: "ARRAY : items format 'object' and object with a property of array type ",
 		Schema: &Schema{
 			Type:        &Types{"array"},
-			UniqueItems: true,
+			UniqueItems: null.BoolFrom(true),
 			Items: (&Schema{
 				Type: &Types{"object"},
 				Properties: Schemas{
 					"key1": (&Schema{
 						Type:        &Types{"array"},
-						UniqueItems: true,
+						UniqueItems: null.BoolFrom(true),
 						Items:       NewFloat64Schema().NewRef(),
 					}).NewRef(),
 				},
@@ -724,10 +725,10 @@ var schemaExamples = []schemaExample{
 		Title: "ARRAY : items format 'array'",
 		Schema: &Schema{
 			Type:        &Types{"array"},
-			UniqueItems: true,
+			UniqueItems: null.BoolFrom(true),
 			Items: (&Schema{
 				Type:        &Types{"array"},
-				UniqueItems: true,
+				UniqueItems: null.BoolFrom(true),
 				Items:       NewFloat64Schema().NewRef(),
 			}).NewRef(),
 		},
@@ -768,10 +769,10 @@ var schemaExamples = []schemaExample{
 		Title: "ARRAY : items format 'array' and array with object type items",
 		Schema: &Schema{
 			Type:        &Types{"array"},
-			UniqueItems: true,
+			UniqueItems: null.BoolFrom(true),
 			Items: (&Schema{
 				Type:        &Types{"array"},
-				UniqueItems: true,
+				UniqueItems: null.BoolFrom(true),
 				Items: (&Schema{
 					Type: &Types{"object"},
 					Properties: Schemas{
@@ -1482,7 +1483,7 @@ enum:
 func TestIssue751(t *testing.T) {
 	schema := &Schema{
 		Type:        &Types{"array"},
-		UniqueItems: true,
+		UniqueItems: null.BoolFrom(true),
 		Items:       NewStringSchema().NewRef(),
 	}
 	validData := []string{"foo", "bar"}

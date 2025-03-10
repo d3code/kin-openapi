@@ -3,6 +3,7 @@ package openapi3_test
 import (
 	"testing"
 
+	"github.com/guregu/null/v5"
 	"github.com/stretchr/testify/require"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -12,7 +13,7 @@ func TestRegisterArrayUniqueItemsChecker(t *testing.T) {
 	var (
 		schema = openapi3.Schema{
 			Type:        &openapi3.Types{"array"},
-			UniqueItems: true,
+			UniqueItems: null.BoolFrom(true),
 			Items:       openapi3.NewStringSchema().NewRef(),
 		}
 		val = []any{"1", "2", "3"}

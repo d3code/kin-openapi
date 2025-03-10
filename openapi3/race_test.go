@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/d3code/kin-openapi/openapi3"
 )
 
 func TestRaceyPatternSchemaValidateHindersIt(t *testing.T) {

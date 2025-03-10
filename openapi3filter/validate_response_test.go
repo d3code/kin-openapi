@@ -9,7 +9,7 @@ import (
 	"github.com/guregu/null/v5"
 	"github.com/stretchr/testify/require"
 
-	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/d3code/kin-openapi/openapi3"
 )
 
 func Test_validateResponseHeader(t *testing.T) {

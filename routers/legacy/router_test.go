@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/getkin/kin-openapi/routers"
+	"github.com/d3code/kin-openapi/openapi3"
+	"github.com/d3code/kin-openapi/routers"
 )
 
 func TestRouter(t *testing.T) {

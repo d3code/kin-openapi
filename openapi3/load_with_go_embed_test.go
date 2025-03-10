@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/d3code/kin-openapi/openapi3"
 )
 
 //go:embed testdata/recursiveRef/*

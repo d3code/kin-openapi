@@ -9,8 +9,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/getkin/kin-openapi/openapi3"
-	legacyrouter "github.com/getkin/kin-openapi/routers/legacy"
+	"github.com/d3code/kin-openapi/openapi3"
+	legacyrouter "github.com/d3code/kin-openapi/routers/legacy"
 )
 
 func TestReadOnlyWriteOnlyPropertiesValidation(t *testing.T) {

@@ -8,8 +8,8 @@ import (
 
 	"github.com/oasdiff/yaml"
 
-	"github.com/getkin/kin-openapi/openapi2"
-	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/d3code/kin-openapi/openapi2"
+	"github.com/d3code/kin-openapi/openapi3"
 )
 
 var (
